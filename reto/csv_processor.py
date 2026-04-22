@@ -1,4 +1,6 @@
 import csv
+import matplotlib.pyplot as plt
+
 
 def show_first_15(file_path):
     try:
@@ -15,6 +17,7 @@ def show_first_15(file_path):
         print("Archivo no encontrado.")
     except StopIteration:
         print("Archivo CSV vacío.")
+
 
 def calculate_stats(file_path, column):
     try:
@@ -49,6 +52,7 @@ def calculate_stats(file_path, column):
         print("Archivo no encontrado.")
         return None
 
+
 def plot_column(file_path, column):
     try:
         with open(file_path, 'r', newline='', encoding='utf-8') as f:
@@ -69,30 +73,27 @@ def plot_column(file_path, column):
             if not data:
                 print("No hay datos numéricos en la columna.")
                 return
-            # Simple text scatter: print indices and values (limited to first 20)
-            print("Gráfico de dispersión (índice, valor):")
-            for i, val in enumerate(data[:20]):
-                print(f"{i}: {val}")
-            if len(data) > 20:
-                print("... (mostrando solo los primeros 20)")
-            # Text-based histogram
-            min_val = min(data)
-            max_val = max(data)
-            if min_val == max_val:
-                print("Todos los valores son iguales, no se puede crear histograma.")
-                return
-            bins = 10
-            bin_width = (max_val - min_val) / bins
-            hist = [0] * bins
-            for val in data:
-                bin_idx = int((val - min_val) / bin_width)
-                if bin_idx == bins:
-                    bin_idx -= 1
-                hist[bin_idx] += 1
-            print("Histograma:")
-            for i in range(bins):
-                bin_start = min_val + i * bin_width
-                bin_end = min_val + (i + 1) * bin_width
-                print(f"{bin_start:.2f}-{bin_end:.2f}: {'*' * hist[i]}")
+
+            # Scatter plot
+            plt.figure(figsize=(10, 5))
+            plt.scatter(range(len(data)), data, color='blue', alpha=0.7)
+            plt.title(f'Gráfica de dispersión: {column}')
+            plt.xlabel('Índice')
+            plt.ylabel(column)
+            plt.grid(True, linestyle='--', alpha=0.5)
+            plt.tight_layout()
+            plt.show()
+
+            # Bar plot for rearranged data: sort values and display top 10
+            sorted_data = sorted(data, reverse=True)
+            bar_data = sorted_data[:10] if len(sorted_data) >= 10 else sorted_data
+            plt.figure(figsize=(10, 5))
+            plt.bar(range(len(bar_data)), bar_data, color='orange', edgecolor='black')
+            plt.title(f'Gráfico de barras (valores ordenados) de {column}')
+            plt.xlabel('Posición')
+            plt.ylabel(column)
+            plt.xticks(range(len(bar_data)), [str(i + 1) for i in range(len(bar_data))])
+            plt.tight_layout()
+            plt.show()
     except FileNotFoundError:
         print("Archivo no encontrado.")
