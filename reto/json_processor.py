@@ -37,8 +37,8 @@ def edit_json(file_path):
         print("1. Agregar/Modificar clave")
         print("2. Eliminar clave")
         print("3. Guardar y salir")
-        choice = input("Elige una opción: ")
-        if choice == '1':
+        opcion = input("Elige una opción: ")
+        if opcion == '1':
             key = input("Ingresa la clave: ")
             value_str = input("Ingresa el valor (ej: 'string', 123, [1,2], {'key':'val'}): ")
             try:
@@ -47,14 +47,14 @@ def edit_json(file_path):
                 print("Clave agregada/modificada.")
             except Exception as e:
                 print(f"Valor inválido: {e}")
-        elif choice == '2':
+        elif opcion == '2':
             key = input("Ingresa la clave a eliminar: ")
             if key in data:
                 del data[key]
                 print("Clave eliminada.")
             else:
                 print("Clave no encontrada.")
-        elif choice == '3':
+        elif opcion == '3':
             try:
                 with open(file_path, 'w', encoding='utf-8') as f:
                     json.dump(data, f, indent=4)

@@ -1,98 +1,110 @@
 import csv
+import statistics
 import matplotlib.pyplot as plt
 
 
-def show_first_15(file_path):
+def mostrar_primeros_15(ruta_archivo, separador=','):
     try:
-        with open(file_path, 'r', newline='', encoding='utf-8') as f:
-            reader = csv.reader(f)
-            headers = next(reader, None)
-            if headers:
-                print(','.join(headers))
-            for i, row in enumerate(reader):
+        with open(ruta_archivo, 'r', newline='', encoding='utf-8') as f:
+            lector = csv.reader(f, delimiter=separador)
+            encabezados = next(lector, None)
+            if encabezados:
+                encabezados = [h.strip() for h in encabezados]
+                print(','.join(encabezados))
+            for i, fila in enumerate(lector):
                 if i >= 15:
                     break
-                print(','.join(row))
+                print(','.join(fila))
     except FileNotFoundError:
         print("Archivo no encontrado.")
     except StopIteration:
         print("Archivo CSV vacío.")
 
 
-def calculate_stats(file_path, column):
+def calcular_estadisticas(ruta_archivo, columna, separador=','):
     try:
-        with open(file_path, 'r', newline='', encoding='utf-8') as f:
-            reader = csv.reader(f)
-            headers = next(reader, None)
-            if not headers or column not in headers:
+        with open(ruta_archivo, 'r', newline='', encoding='utf-8') as f:
+            lector = csv.reader(f, delimiter=separador)
+            encabezados = next(lector, None)
+            if encabezados:
+                encabezados = [h.strip() for h in encabezados]
+            columna = columna.strip()
+            if not encabezados or columna not in encabezados:
                 print("Columna no encontrada.")
                 return None
-            col_index = headers.index(column)
-            data = []
-            for row in reader:
-                if len(row) > col_index:
+            indice_columna = encabezados.index(columna)
+            datos = []
+            for fila in lector:
+                if len(fila) > indice_columna:
                     try:
-                        val = float(row[col_index])
-                        data.append(val)
+                        valor = float(fila[indice_columna].strip())
+                        datos.append(valor)
                     except ValueError:
-                        pass  # skip non-numeric
-            if not data:
+                        pass  # saltear no numéricos
+            if not datos:
                 print("No hay datos numéricos en la columna.")
                 return None
-            num_data = len(data)
-            mean = sum(data) / num_data
-            data_sorted = sorted(data)
-            median = data_sorted[num_data // 2] if num_data % 2 == 1 else (data_sorted[num_data // 2 - 1] + data_sorted[num_data // 2]) / 2
-            variance = sum((x - mean) ** 2 for x in data) / num_data
-            std = variance ** 0.5
-            max_val = max(data)
-            min_val = min(data)
-            return num_data, mean, median, std, max_val, min_val
+            num_datos = len(datos)
+            media = sum(datos) / num_datos
+            datos_ordenados = sorted(datos)
+            mediana = datos_ordenados[num_datos // 2] if num_datos % 2 == 1 else (datos_ordenados[num_datos // 2 - 1] + datos_ordenados[num_datos // 2]) / 2
+            try:
+                moda = statistics.mode(datos)
+            except statistics.StatisticsError:
+                moda = None  # No hay moda única
+            varianza = sum((x - media) ** 2 for x in datos) / num_datos
+            desv_est = varianza ** 0.5
+            valor_max = max(datos)
+            valor_min = min(datos)
+            return num_datos, media, mediana, moda, desv_est, valor_max, valor_min
     except FileNotFoundError:
         print("Archivo no encontrado.")
         return None
 
 
-def plot_column(file_path, column):
+def graficar_columna(ruta_archivo, columna, separador=','):
     try:
-        with open(file_path, 'r', newline='', encoding='utf-8') as f:
-            reader = csv.reader(f)
-            headers = next(reader, None)
-            if not headers or column not in headers:
+        with open(ruta_archivo, 'r', newline='', encoding='utf-8') as f:
+            lector = csv.reader(f, delimiter=separador)
+            encabezados = next(lector, None)
+            if encabezados:
+                encabezados = [h.strip() for h in encabezados]
+            columna = columna.strip()
+            if not encabezados or columna not in encabezados:
                 print("Columna no encontrada.")
                 return
-            col_index = headers.index(column)
-            data = []
-            for row in reader:
-                if len(row) > col_index:
+            indice_columna = encabezados.index(columna)
+            datos = []
+            for fila in lector:
+                if len(fila) > indice_columna:
                     try:
-                        val = float(row[col_index])
-                        data.append(val)
+                        valor = float(fila[indice_columna].strip())
+                        datos.append(valor)
                     except ValueError:
                         pass
-            if not data:
+            if not datos:
                 print("No hay datos numéricos en la columna.")
                 return
 
-            # Scatter plot
+            # Gráfica de dispersión
             plt.figure(figsize=(10, 5))
-            plt.scatter(range(len(data)), data, color='blue', alpha=0.7)
-            plt.title(f'Gráfica de dispersión: {column}')
+            plt.scatter(range(len(datos)), datos, color='blue', alpha=0.7)
+            plt.title(f'Gráfica de dispersión: {columna}')
             plt.xlabel('Índice')
-            plt.ylabel(column)
+            plt.ylabel(columna)
             plt.grid(True, linestyle='--', alpha=0.5)
             plt.tight_layout()
             plt.show()
 
-            # Bar plot for rearranged data: sort values and display top 10
-            sorted_data = sorted(data, reverse=True)
-            bar_data = sorted_data[:10] if len(sorted_data) >= 10 else sorted_data
+            # Gráfico de barras con datos ordenados: clasificar valores y mostrar los 10 principales
+            datos_ordenados = sorted(datos, reverse=True)
+            datos_barras = datos_ordenados[:10] if len(datos_ordenados) >= 10 else datos_ordenados
             plt.figure(figsize=(10, 5))
-            plt.bar(range(len(bar_data)), bar_data, color='orange', edgecolor='black')
-            plt.title(f'Gráfico de barras (valores ordenados) de {column}')
+            plt.bar(range(len(datos_barras)), datos_barras, color='orange', edgecolor='black')
+            plt.title(f'Gráfico de barras (valores ordenados) de {columna}')
             plt.xlabel('Posición')
-            plt.ylabel(column)
-            plt.xticks(range(len(bar_data)), [str(i + 1) for i in range(len(bar_data))])
+            plt.ylabel(columna)
+            plt.xticks(range(len(datos_barras)), [str(i + 1) for i in range(len(datos_barras))])
             plt.tight_layout()
             plt.show()
     except FileNotFoundError:
